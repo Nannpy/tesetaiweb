@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KBON AI Object Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar styling for aesthetics */
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+        body::-webkit-scrollbar-thumb {
+            background-color: #6366f1; /* Indigo-500 */
+            border-radius: 4px;
+        }
+        .flash-message {
+            animation: fadeout 5s forwards;
+        }
+        @keyframes fadeout {
+            0% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; display: none; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans antialiased flex flex-col items-center p-4">
+
+    <!-- Header -->
+    <header class="w-full max-w-4xl text-center py-6">
+        <h1 class="text-4xl font-extrabold text-indigo-700 tracking-tight">
+            Live Object Detection (KBON AI)
+        </h1>
+        <p class="mt-2 text-lg text-gray-600">Upload an image to see objects detected by a PyTorch/Flask service.</p>
+    </header>
+
+    <!-- Flash Messages -->
+    <div class="w-full max-w-4xl mb-4">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-message bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-2" role="alert">
+                        <strong class="font-bold">Error:</strong>
+                        <span class="block sm:inline">{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Upload Form Card -->
+    <main class="w-full max-w-xl bg-white shadow-xl rounded-2xl p-6 mb-8 border border-gray-200">
+        <form method="POST" enctype="multipart/form-data" action="/" class="space-y-6">
+            <label for="image" class="block text-sm font-medium text-gray-700">Select Image File (JPG, PNG)</label>
+            <div class="flex items-center space-x-4">
+                <input type="file" id="image" name="image" accept="image/*" required 
+                       class="flex-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                
+                <button type="submit" 
+                        class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out">
+                    Analyze Image
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <!-- Results Display -->
+    {% if uploaded_image and detected_image %}
+        <section class="w-full max-w-4xl space-y-8">
+            <h2 class="text-3xl font-bold text-gray-800 border-b pb-2">Detection Results</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Original Image -->
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-3 text-center text-indigo-600">Original Image</h3>
+                    <div class="w-full flex justify-center items-center bg-gray-50 rounded-lg overflow-hidden">
+                        <img src="{{ uploaded_image }}" alt="Uploaded Image" class="max-h-[80vh] w-auto h-auto object-contain rounded-lg shadow-md transition duration-300 hover:scale-[1.02]">
+                    </div>
+                </div>
+
+                <!-- Detected Image -->
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-3 text-center text-green-600">Detected Objects</h3>
+                    <div class="w-full flex justify-center items-center bg-gray-50 rounded-lg overflow-hidden">
+                        <img src="{{ detected_image }}" alt="Detected Image" class="max-h-[80vh] w-auto h-auto object-contain rounded-lg shadow-md transition duration-300 hover:scale-[1.02]">
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% elif uploaded_image or detected_image %}
+        <!-- Handle case where one link is present but not the other (shouldn't happen with app.py logic) -->
+        <p class="text-red-500">Incomplete result data. Please try again.</p>
+    {% else %}
+        <!-- Initial Message -->
+        <p class="text-gray-500 mt-4 p-4 bg-white rounded-lg shadow">Waiting for your first image upload...</p>
+    {% endif %}
+
+</body>
+</html>
