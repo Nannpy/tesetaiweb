@@ -6,37 +6,36 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "supersecret"
 
-# โฟลเดอร์สำหรับเก็บภาพ
+# Create folder for saving picture
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['OUTPUT_FOLDER'] = 'static/output'
 
-# โหลดโมเดล YOLO (เปลี่ยน path ตามโมเดลของคุณ)
 model = YOLO("yolov8n.pt")
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        # ตรวจสอบไฟล์
+        # check file
         if 'image' not in request.files:
-            flash('ไม่พบไฟล์ภาพ')
+            flash('Image file not found')
             return redirect(request.url)
 
         file = request.files['image']
         if file.filename == '':
-            flash('ยังไม่ได้เลือกไฟล์')
+            flash('File not selected yet')
             return redirect(request.url)
 
         if file:
-            # ตั้งชื่อไฟล์ input แบบไม่ซ้ำ
+            # name input file
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             input_filename = f"{timestamp}_{file.filename}"
             upload_path = os.path.join(app.config['UPLOAD_FOLDER'], input_filename)
             file.save(upload_path)
 
-            # วิเคราะห์ภาพด้วย YOLO
+            # model analyze
             results = model(upload_path)
 
-            # ตั้งชื่อ output แบบไม่ซ้ำ
+            # name output file
             output_filename = f"output_{timestamp}.jpg"
             output_path = os.path.join(app.config['OUTPUT_FOLDER'], output_filename)
 
